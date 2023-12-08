@@ -1,15 +1,17 @@
 import 'package:flutter/material.dart';
+import 'package:litera_vibe/models/author.dart';
 
-class Book extends StatefulWidget {
-  const Book({super.key});
+class Book {
+  int id;
+  String name;
+  String imageUrl;
+  int countPages;
+  String info;
+  List<Author> authors;
+  int? year;
+  int publisherId;
+  double mark;
 
-  @override
-  State<Book> createState() => _BookState();
-}
-
-class _BookState extends State<Book> {
-  @override
-  Widget build(BuildContext context) {
-    return const Placeholder();
-  }
+  Book({required this.id, required this.name, required this.imageUrl, required this.countPages,
+    required this.info, required this.authors, required this.year, required this.publisherId, required this.mark});
 }

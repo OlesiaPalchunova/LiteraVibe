@@ -11,15 +11,17 @@ class Token{
   }
 
   static bool isToken(){
+    print(is_token);
     return is_token;
   }
 
   static Future<void> setAccessToken(String newAccessToken) async {
     await storage.write(key: 'access_token', value: newAccessToken);
     is_token = true;
+    print(33333333333);
   }
 
-  static void setRefreshToken(String newRefreshToken) async {
+  static Future setRefreshToken(String newRefreshToken) async {
     await storage.write(key: 'refresh_token', value: newRefreshToken);
   }
 
@@ -43,8 +45,9 @@ class Token{
     await storage.delete(key: 'refresh_token');
   }
 
-  void deleteAll1() async {
+  Future deleteAll() async {
     await storage.deleteAll();
+    is_token = false;
   }
 
 }

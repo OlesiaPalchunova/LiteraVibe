@@ -2,8 +2,9 @@ import 'package:flutter/material.dart';
 
 class TextPlace extends StatelessWidget {
   final String text;
+  TextEditingController controller;
 
-  TextPlace ({required this.text});
+  TextPlace ({required this.text, required this.controller});
 
   @override
   Widget build(BuildContext context) {
@@ -16,6 +17,7 @@ class TextPlace extends StatelessWidget {
           borderRadius: BorderRadius.circular(30.0), // Установите радиус углов
         ),
         child: TextField(
+          controller: controller,
           decoration: InputDecoration(
             hintText: text,
             fillColor: Colors.mycolor4,

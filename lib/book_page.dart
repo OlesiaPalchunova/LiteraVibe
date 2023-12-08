@@ -1,11 +1,19 @@
 import 'package:flutter/material.dart';
+import 'package:litera_vibe/db/commentDB.dart';
+import 'package:litera_vibe/db/storage/token.dart';
+import 'package:litera_vibe/db/storage/user_info.dart';
 import 'package:litera_vibe/style.dart';
 
+import 'models/book.dart';
+import 'models/comment.dart';
 import 'models/comment_model.dart';
 import 'models/stars.dart';
 
 class BookPage extends StatefulWidget {
-  const BookPage({super.key});
+  BookPage();
+  // BookPage({required this.book});
+  //
+  // Book book;
 
   @override
   State<BookPage> createState() => _BookPageState();
@@ -13,17 +21,41 @@ class BookPage extends StatefulWidget {
 
 class _BookPageState extends State<BookPage> {
 
+
   int current_button = 0;
+  late Book book;
+  TextEditingController _noticeController = TextEditingController();
+  TextEditingController _commentController = TextEditingController();
+  List<CommentModel> comments = [];
   bool isNoticed = false;
   bool isAdding = false;
+  int currentButton = 0;
+  bool _isInitialized = false;
 
-  TextEditingController _noticeController = TextEditingController();
-  List<CommentModel> comments = [
-    CommentModel(count_stars: 3, login: 'arty', profile_url: '', content: 'Читал и получше книги',),
-    CommentModel(count_stars: 5, login: 'flora', profile_url: '', content: 'Моя самая любимая книга!!!',),
-    CommentModel(count_stars: 4, login: 'user174658', profile_url: '', content: 'В целом интересно, но концовка разочаровала',),
-    CommentModel(count_stars: 4, login: 'user174658', profile_url: '', content: 'В целом интересно, но концовка разочаровала',),
-  ];
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (!_isInitialized) {
+      final Book newBook = ModalRoute.of(context)!.settings.arguments as Book;
+      initBook(newBook);
+      initComments();
+      _isInitialized = true;
+    }
+  }
+  void initBook(Book newBook) {
+    setState(() {
+      book = newBook;
+    });
+  }
+
+  Future<void> initComments() async {
+    List<Comment> coms = await CommentDB().getComments(book.id);
+    List<CommentModel> loadedComments = coms.map((c) => CommentModel(comment: c)).toList();
+    setState(() {
+      comments = loadedComments;
+    });
+  }
 
   Widget Add() {
     return isAdding ?
@@ -133,7 +165,7 @@ class _BookPageState extends State<BookPage> {
       return Padding(
         padding: const EdgeInsets.all(10.0),
         child: Text(
-          "brgbrtb rtbrwfgfbbf ып вап вапип ршлгш ывапе вкпе ывпе gbfgtbfbdfdfg gdhst rtbrbrbt rbrtbr brgbrtb rtbrwt rtbrbrbt rbrtbr\nbrgbrtb rtbrwt rtbrbrbt rbrtbr",
+          book.info,
           style: TextStyle(
               color: Colors.mycolor4,
             fontFamily: font,
@@ -222,6 +254,7 @@ class _BookPageState extends State<BookPage> {
                     child: Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 8.0),
                       child: TextField(
+                        controller: _commentController,
                         decoration: InputDecoration(
                           hintText: 'Добавить комментарий..',
                           border: InputBorder.none,
@@ -231,7 +264,19 @@ class _BookPageState extends State<BookPage> {
                   ),
                 ),
                 IconButton(
-                  onPressed: (){},
+                  onPressed: () async {
+                    if (Token.is_token) {
+                      Comment comment = Comment(
+                          id: 0,
+                          login: UserInfo.uid,
+                          book_id: book.id,
+                          post_time: DateTime.now().toString(),
+                          content: _commentController.text
+                      );
+                      await CommentDB().addComment(comment);
+                      initComments();
+                    }
+                  },
                   color: Colors.mycolor1,
                   icon: Icon(Icons.send),
                 )
@@ -245,6 +290,7 @@ class _BookPageState extends State<BookPage> {
 
   @override
   Widget build(BuildContext context) {
+
     return Scaffold(
       backgroundColor: Colors.mycolor1,
       appBar: AppBar(
@@ -269,7 +315,7 @@ class _BookPageState extends State<BookPage> {
                         padding: EdgeInsets.only(left: 10),
                         width: 200,
                         child: Text(
-                            "Book night holly black",
+                            book.name,
                           style: TextStyle(
                             color: Colors.mycolor5,
                             fontSize: 22,
@@ -282,7 +328,7 @@ class _BookPageState extends State<BookPage> {
                         padding: EdgeInsets.only(left: 10),
                         width: 200,
                         child: Text(
-                            "страниц: 4",
+                            "страниц: ${book.countPages}",
                             textAlign: TextAlign.left,
                             style: TextStyle(
                               color: Colors.mycolor4,
@@ -295,7 +341,7 @@ class _BookPageState extends State<BookPage> {
                         padding: EdgeInsets.only(left: 10),
                         width: 200,
                         child: Text(
-                            "автор: @autor_9",
+                            "автор: @${book.publisherId}",
                             textAlign: TextAlign.left,
                             style: TextStyle(
                               color: Colors.mycolor4,
@@ -308,7 +354,7 @@ class _BookPageState extends State<BookPage> {
                         padding: EdgeInsets.only(left: 10),
                         width: 200,
                         child: Text(
-                            "год: 2015",
+                            "год: ${book.year}",
                             textAlign: TextAlign.left,
                             style: TextStyle(
                               color: Colors.mycolor4,
@@ -320,7 +366,7 @@ class _BookPageState extends State<BookPage> {
                       Container(
                           padding: EdgeInsets.only(left: 10),
                           width: 200,
-                          child: Stars(stars_count: 4, isDark: false,)
+                          child: Stars(stars_count: book.mark.round(), isDark: false,)
                       ),
                     ],
                   )

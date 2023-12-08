@@ -54,7 +54,7 @@ class ProfileDB{
     return status;
   }
 
-  Future<String?> changedProfileToJson(String userUid, String displayName, DroppedFile? imageFile, String info, String tgLink, String vkLink) async {
+  Future<String?> changedProfileToJson(String userUid, String displayName, DroppedFile? imageFile, String mail, String tgLink, String vkLink) async {
 
     var imageId = null;
     if (imageFile != null) imageId = await Authorization().sendImage(imageFile);
@@ -64,9 +64,7 @@ class ProfileDB{
       "uid": userUid,
       "display_name": displayName,
       "media_id": imageId,
-      "info": info,
-      "tg_link": tgLink,
-      "vk_link": vkLink,
+      "email": mail
     };
     var commentJson = jsonEncode(commentDto);
     return commentJson;
@@ -77,6 +75,7 @@ class ProfileDB{
     String? passwordJson = await changedPasswordToJson(login, password);
 
     var accessToken = await Token.getAccessToken();
+    // var response = await http.put(Uri.parse("${apiUrl}profile/password/mobile"),
     var response = await http.put(Uri.parse("${apiUrl}profile/password/mobile"),
         headers: {
           'Authorization': 'Bearer $accessToken',
@@ -119,13 +118,14 @@ class ProfileDB{
       'Custom-Header': 'Custom Value',
     };
     var profileUri = Uri.parse('${apiUrl}profile');
-    var response = await http.get(profileUri, headers: headers);
+    var response = await http.post(profileUri, headers: headers);
     return response;
   }
 
   Future getProfile() async {
     var response = await tryGetProfile();
     var status = response.statusCode;
+    print(status);
     if (status == 401) {
       int status_access = await Authorization.refreshAccessToken();
       if (status_access == 200) response = await tryGetProfile();
@@ -143,9 +143,7 @@ class ProfileDB{
         uid: profileJson["uid"],
         display_name: profileJson["display_name"],
         image: profileJson[faceMedia] != null ? getImageUrl(profileJson[faceMedia]) : defaultProfileUrl,
-        info: profileJson["info"] ?? " ",
-        tg_link: profileJson["tg_link"] ?? " ",
-        vk_link: profileJson["vk_link"] ?? " ",
+        mail: profileJson["email"] ?? " ",
       );
 
       return profile;

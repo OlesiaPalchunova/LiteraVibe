@@ -6,37 +6,38 @@ class UserInfo{
   static String uid = "root";
   static String name = "User";
   static String? image = "null";
-  static String? info = "info";
-  static String? tg = "tg";
-  static String? vk = "vk";
+  static String email = "mail";
   static String? password = "Password";
 
   static final FlutterSecureStorage storage = FlutterSecureStorage();
 
   static Future init() async{
-    var profile = await ProfileDB().getProfile();
+    // var profile = await ProfileDB().getProfile();
 
-    uid = profile.uid;
-    name = profile.display_name;
-    image = profile.image;
-    info = profile.info;
-    tg = profile.tg_link;
-    vk = profile.vk_link;
+    // uid = profile.uid;
+    // name = profile.display_name;
+    // image = profile.image;
+    // mail = profile.mail;
 
-    print("vkvkvkvkvkvkkvk");
-    print(vk);
+    uid = await storage.read(key: 'uid') ?? "user";
+    name = await storage.read(key: 'name') ?? "name";
+    image = await storage.read(key: 'image') ?? "image";
+    email = await storage.read(key: 'email') ?? "email";
+
     password = await storage.read(key: 'password');
     // uid = await storage.read(key: 'uid');
     // name = await storage.read(key: 'name');
     // password = await storage.read(key: 'password');
   }
 
-  static void addUser(String login, String display_name, String user_password) {
+  static Future addUser(String login, String display_name, String user_password, String email, String image) async {
     print("ooooooooooooo");
     storage.write(key: 'uid', value: login);
     storage.write(key: 'name', value: display_name);
     storage.write(key: 'password', value: user_password);
-    init();
+    storage.write(key: 'email', value: email);
+    storage.write(key: 'image', value: image);
+    await init();
   }
 
   static Future getUserUid() {

@@ -1,10 +1,16 @@
 import 'package:flutter/material.dart';
+import 'package:litera_vibe/db/storage/token.dart';
+import 'package:litera_vibe/db/storage/user_info.dart';
 import 'package:litera_vibe/profile/user_page.dart';
+import 'package:litera_vibe/profile_page.dart';
 import 'package:litera_vibe/reading_book.dart';
 import 'package:litera_vibe/style.dart';
 import '../home/home_page.dart';
 import 'book_page.dart';
+import 'db/auth_db.dart';
+import 'db/profile_db.dart';
 import 'favorite/favorite_page.dart';
+import 'home/login_page.dart';
 
 void main() {
   runApp(MyApp());
@@ -30,16 +36,28 @@ class _MyAppState extends State<MyApp> {
     HomePage(),
     // BookPage(),
     FavoritePage(),
+    ProfilePage(),
     // LoginPage(),
-    UserPage()
+    // UserPage()
   ];
 
   @override
+  void initState() {
+    Token.init();
+    UserInfo.init();
+    super.initState();
+  }
+
+  @override
   Widget build(BuildContext context) {
+    // ProfileDB p = ProfileDB();
+    // p.getProfile();
+    // Authorization.loginUser("1237", "1237");
     return MaterialApp(
       routes: {
         '/book_page': (context) => BookPage(),
         '/reading_book': (context) => ReadingBook(),
+        // '/user_page': (context) => UserPage(),
       },
       title: 'LiteraVibe',
       theme: ThemeData(

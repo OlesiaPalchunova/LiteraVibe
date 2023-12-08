@@ -28,22 +28,23 @@ class Authorization {
       var accessToken = jsonResponse["accessToken"];
       var refreshToken = jsonResponse["refreshToken"];
 
-      Token.setAccessToken(accessToken);
-      Token.setRefreshToken(refreshToken);
+      await Token.setAccessToken(accessToken);
+      await Token.setRefreshToken(refreshToken);
 
-      UserInfo.addUser(nickname, "user", password);
+      await UserInfo.addUser(nickname, "user", password, "", "");
     }
 
     return response.statusCode;
   }
 
-  static Future registerUser(String nickname, String password, String displayName, String email) async{
+  static Future registerUser(String nickname, String password, String displayName, String email, String image) async{
 
     var reqBody = {
-      "login":nickname,
-      "password":password,
-      "display_name":displayName,
-      "email":email,
+      "login": nickname,
+      "password": password,
+      "display_name": displayName,
+      "email": email,
+      "media_id": image,
     };
 
     var response = await http.post(Uri.parse('${apiUrl}registration/mobile'),
@@ -53,6 +54,7 @@ class Authorization {
 
     print(response.statusCode);
     print(response.body);
+    print(jsonEncode(reqBody));
 
     if (response.statusCode == 200) {
       var jsonResponse = jsonDecode(response.body);
@@ -60,10 +62,10 @@ class Authorization {
       var refreshToken = jsonResponse["refreshToken"];
 
 
-      Token.setAccessToken(accessToken);
-      Token.setRefreshToken(refreshToken);
-
-      UserInfo.addUser(nickname, displayName, password);
+      await Token.setAccessToken(accessToken);
+      await Token.setRefreshToken(refreshToken);
+      await UserInfo.addUser(nickname, displayName, password, email, image);
+      // UserInfo.addUser(nickname, displayName, password);
     }
 
     return response.statusCode;

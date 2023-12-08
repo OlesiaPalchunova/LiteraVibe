@@ -2,20 +2,20 @@ import 'package:flutter/material.dart';
 import 'package:litera_vibe/models/stars.dart';
 
 import '../style.dart';
+import 'comment.dart';
 
 class CommentModel extends StatefulWidget {
-  int count_stars;
-  String login;
-  String profile_url;
-  String content;
+  Comment comment;
 
-  CommentModel({required this.count_stars, required this.login, required this.profile_url, required this.content});
+  CommentModel({required this.comment});
 
   @override
   State<CommentModel> createState() => _CommentModelState();
 }
 
 class _CommentModelState extends State<CommentModel> {
+  int count_stars = 5;
+
   @override
   Widget build(BuildContext context) {
     return Padding(
@@ -54,20 +54,20 @@ class _CommentModelState extends State<CommentModel> {
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         Text(
-                            '@${widget.login}',
+                          widget.comment.login != null ? '@${widget.comment.login}' : 'user_${widget.comment.id}',
                           style: TextStyle(
                             fontWeight: FontWeight.bold,
                           ),
                         ),
                         Spacer(),
-                        Stars(stars_count: widget.count_stars, isDark: true,),
+                        Stars(stars_count: count_stars, isDark: true,),
                       ],
                     ),
                   ),
                   Container(
                       width: 220,
                       child: Text(
-                          widget.content
+                          widget.comment.content
                       )
                   )
                 ],
