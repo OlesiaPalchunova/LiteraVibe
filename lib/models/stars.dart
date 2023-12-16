@@ -2,34 +2,25 @@ import 'package:flutter/material.dart';
 
 class Stars extends StatelessWidget {
   int stars_count;
-  bool isDark;
 
-  Stars({required this.stars_count, required this.isDark});
+  Stars({required this.stars_count});
+
+  Widget Star(int min) {
+    return Icon(
+      stars_count > min ? Icons.star : Icons.star_border,
+      color: Colors.mycolor1,
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
     return Row(
       children: [
-        Icon(
-          Icons.star,
-          color: isDark ?Colors.mycolor1 : Colors.mycolor4,
-        ),
-        Icon(
-          stars_count > 1 ? Icons.star : Icons.star_border,
-          color: isDark ?Colors.mycolor1 : Colors.mycolor4,
-        ),
-        Icon(
-          stars_count > 2 ? Icons.star : Icons.star_border,
-          color: isDark ?Colors.mycolor1 : Colors.mycolor4,
-        ),
-        Icon(
-          stars_count > 3 ? Icons.star : Icons.star_border,
-          color: isDark ?Colors.mycolor1 : Colors.mycolor4,
-        ),
-        Icon(
-          stars_count > 4 ? Icons.star : Icons.star_border,
-          color: isDark ?Colors.mycolor1 : Colors.mycolor4,
-        ),
+        Star(0),
+        Star(1),
+        Star(2),
+        Star(3),
+        Star(4),
       ],
     );
   }

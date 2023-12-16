@@ -98,4 +98,92 @@ class CommentDB {
     return status;
   }
 
+  Future<int> tryEditComment(Comment comment) async{
+    print("(((comment.login)))");
+    print(comment.login);
+    var reqBody = {
+      "id": comment.id,
+      "login": comment.login,
+      "book_id": comment.book_id,
+      // "post_time": comment.post_time,
+      "post_time": "2017-07-21T17:32:28Z",
+      "content": comment.content
+    };
+
+    var accessToken = await Token.getAccessToken();
+
+    var response = await http.put(Uri.parse('${apiUrl}comments?book_id=${comment.book_id}&comment_id=${comment.id}'),
+        headers: <String, String>{
+          'Authorization': 'Bearer $accessToken',
+          'Content-Type': 'application/json; charset=UTF-8',
+        },
+        body: jsonEncode(reqBody)
+    );
+    print(response.body);
+    print(response.statusCode);
+
+    return response.statusCode;
+  }
+
+  Future editComment(Comment comment) async {
+    var status = await tryEditComment(comment);
+
+    if (status == 200) return status;
+
+    if (status == 401) {
+      int status_access = await Authorization.refreshAccessToken();
+      if (status_access == 200) return await tryEditComment(comment);
+      if (status_access == 401) {
+        print("need auth");
+        // int status_refresh = await Authorization.refreshTokens();
+        // if (status_refresh == 200) return await tryAddComment(comment);
+      }
+    }
+    return status;
+  }
+
+  Future<int> tryDeleteComment(Comment comment) async{
+    print("(((comment.login)))");
+    print(comment.login);
+    var reqBody = {
+      "id": comment.id,
+      "login": comment.login,
+      "book_id": comment.book_id,
+      // "post_time": comment.post_time,
+      "post_time": "2017-07-21T17:32:28Z",
+      "content": comment.content
+    };
+
+    var accessToken = await Token.getAccessToken();
+
+    var response = await http.delete(Uri.parse('${apiUrl}comments/${comment.id}'),
+        headers: <String, String>{
+          'Authorization': 'Bearer $accessToken',
+          'Content-Type': 'application/json; charset=UTF-8',
+        },
+        body: jsonEncode(reqBody)
+    );
+    print(response.body);
+    print(response.statusCode);
+
+    return response.statusCode;
+  }
+
+  Future deleteComment(Comment comment) async {
+    var status = await tryDeleteComment(comment);
+
+    if (status == 200) return status;
+
+    if (status == 401) {
+      int status_access = await Authorization.refreshAccessToken();
+      if (status_access == 200) return await tryDeleteComment(comment);
+      if (status_access == 401) {
+        print("need auth");
+        // int status_refresh = await Authorization.refreshTokens();
+        // if (status_refresh == 200) return await tryAddComment(comment);
+      }
+    }
+    return status;
+  }
+
 }

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:litera_vibe/db/storage/user_info.dart';
 
+import '../db/profile_db.dart';
 import '../db/storage/token.dart';
 import '../models/profile.dart';
 import '../style.dart';
@@ -28,15 +29,25 @@ class _UserPageState extends State<UserPage> {
   @override
   void initState() {
     super.initState();
-    profile = Profile(
-        uid: UserInfo.uid,
-        display_name: UserInfo.name,
-        image: UserInfo.image ?? "",
-        mail: UserInfo.email
-    );
-    _nameController = TextEditingController(text: profile.display_name);
-    _mailController = TextEditingController(text: profile.mail);
-    _uidController = TextEditingController(text: profile.uid);
+    print(UserInfo.image);
+    print("UserInfo.image");
+    initProfile();
+  }
+
+  void initProfile() {
+    setState(() {
+      profile = Profile(
+          uid: UserInfo.uid,
+          display_name: UserInfo.name,
+          image: UserInfo.image ?? "null",
+          mail: UserInfo.email
+      );
+
+      _nameController = TextEditingController(text: profile.display_name);
+      _mailController = TextEditingController(text: profile.mail);
+      _uidController = TextEditingController(text: profile.uid);
+    });
+
   }
 
   Widget EditingField(String text, TextEditingController _noticeController) {
@@ -194,7 +205,7 @@ class _UserPageState extends State<UserPage> {
                 child: ClipRRect(
                   borderRadius: BorderRadius.circular(15),
                   child: Image.network(
-                      profile.image != "null" ? profile.image : "https://cs14.pikabu.ru/post_img/big/2023/02/13/8/1676295806139337963.png",
+                      "https://cs14.pikabu.ru/post_img/big/2023/02/13/8/1676295806139337963.png",
                     fit: BoxFit.cover,
                   ),
                 ),
@@ -251,8 +262,21 @@ class _UserPageState extends State<UserPage> {
             Padding(
               padding: const EdgeInsets.only(top: 25.0, bottom: 15),
               child: ElevatedButton(
-                onPressed: () {
+                onPressed: () async {
+                  if (isUpdating) {
+                    var status = await ProfileDB().updateProfile(
+                        userUid: _uidController.text,
+                        displayName:   _nameController.text,
+                        imageFile: null,
+                        email: _mailController.text
+                    );
+                    if (status == 200) {
+                      await UserInfo.init();
+                      initProfile();
+                    }
+                  }
                   setState(() {
+
                     isUpdating = !isUpdating;
                   });
                 },

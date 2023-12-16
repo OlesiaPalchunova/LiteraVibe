@@ -5,26 +5,26 @@ import '../profile_db.dart';
 class UserInfo{
   static String uid = "root";
   static String name = "User";
-  static String? image = "null";
+  static String image = "null";
   static String email = "mail";
   static String? password = "Password";
 
   static final FlutterSecureStorage storage = FlutterSecureStorage();
 
   static Future init() async{
-    // var profile = await ProfileDB().getProfile();
+    var profile = await ProfileDB().getProfile();
 
-    // uid = profile.uid;
-    // name = profile.display_name;
-    // image = profile.image;
-    // mail = profile.mail;
+    uid = profile.uid;
+    name = profile.display_name;
+    image = profile.image;
+    email = profile.mail;
 
-    uid = await storage.read(key: 'uid') ?? "user";
-    name = await storage.read(key: 'name') ?? "name";
-    image = await storage.read(key: 'image') ?? "image";
-    email = await storage.read(key: 'email') ?? "email";
-
-    password = await storage.read(key: 'password');
+    // uid = await storage.read(key: 'uid') ?? "user";
+    // name = await storage.read(key: 'name') ?? "name";
+    // image = await storage.read(key: 'image') ?? "image";
+    // email = await storage.read(key: 'email') ?? "email";
+    //
+    // password = await storage.read(key: 'password');
     // uid = await storage.read(key: 'uid');
     // name = await storage.read(key: 'name');
     // password = await storage.read(key: 'password');

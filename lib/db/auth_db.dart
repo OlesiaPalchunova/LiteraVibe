@@ -119,7 +119,8 @@ class Authorization {
 
     if (response.statusCode == 200) {
       Map<String, dynamic> responseData = json.decode(response.body);
-      String newAccessToken = responseData['accessToken'];
+      String? newAccessToken = responseData['accessToken'];
+      if (newAccessToken == null) return 401;
       Token.setAccessToken(newAccessToken);
     }
     return response.statusCode;

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:litera_vibe/db/storage/collections_info.dart';
 import 'package:litera_vibe/db/storage/token.dart';
 import 'package:litera_vibe/db/storage/user_info.dart';
 import 'package:litera_vibe/profile/user_page.dart';
@@ -9,6 +10,7 @@ import '../home/home_page.dart';
 import 'book_page.dart';
 import 'db/auth_db.dart';
 import 'db/profile_db.dart';
+import 'experements.dart';
 import 'favorite/favorite_page.dart';
 import 'home/login_page.dart';
 
@@ -34,6 +36,7 @@ class _MyAppState extends State<MyApp> {
 
   final List<Widget> _pages = [
     HomePage(),
+    // SearchScreen(),
     // BookPage(),
     FavoritePage(),
     ProfilePage(),
@@ -45,6 +48,7 @@ class _MyAppState extends State<MyApp> {
   void initState() {
     Token.init();
     UserInfo.init();
+    CollectionInfo().initCollections();
     super.initState();
   }
 
@@ -57,6 +61,7 @@ class _MyAppState extends State<MyApp> {
       routes: {
         '/book_page': (context) => BookPage(),
         '/reading_book': (context) => ReadingBook(),
+        '/search': (context) => SearchScreen(),
         // '/user_page': (context) => UserPage(),
       },
       title: 'LiteraVibe',

@@ -1,13 +1,18 @@
 import 'package:flutter/material.dart';
+import 'package:litera_vibe/db/collections_db.dart';
 import 'package:litera_vibe/db/commentDB.dart';
+import 'package:litera_vibe/db/mark_db.dart';
 import 'package:litera_vibe/db/storage/token.dart';
 import 'package:litera_vibe/db/storage/user_info.dart';
 import 'package:litera_vibe/style.dart';
 
+import 'db/notes_db.dart';
+import 'models/Note.dart';
 import 'models/book.dart';
 import 'models/comment.dart';
 import 'models/comment_model.dart';
 import 'models/stars.dart';
+import 'models/stars_panel.dart';
 
 class BookPage extends StatefulWidget {
   BookPage();
@@ -28,9 +33,12 @@ class _BookPageState extends State<BookPage> {
   TextEditingController _commentController = TextEditingController();
   List<CommentModel> comments = [];
   bool isNoticed = false;
+  bool isEmpty = true;
   bool isAdding = false;
   int currentButton = 0;
   bool _isInitialized = false;
+  static int mark = 0;
+  Note note = Note(id: 0, content: "");
 
 
   @override
@@ -41,17 +49,58 @@ class _BookPageState extends State<BookPage> {
       initBook(newBook);
       initComments();
       _isInitialized = true;
+      initMark();
+      initNote();
     }
   }
+
   void initBook(Book newBook) {
     setState(() {
       book = newBook;
     });
   }
 
+  void changeMark(int newMark) async {
+    var status;
+    if (mark == 0) {
+      status = await MarkDB().addUserMark(book.id, UserInfo.uid, newMark);
+    } else {
+      await MarkDB().deleteUserMark(book.id, UserInfo.uid);
+      status = await MarkDB().addUserMark(book.id, UserInfo.uid, newMark);
+    }
+    if (status == 200){
+      setState(() {
+        mark = newMark;
+      });
+    }
+  }
+
+  void initNote() async {
+    Note newNote = await NotesDB().getNote(book.id);
+    setState(() {
+      print(99999);
+      print(note);
+      note = newNote;
+      isEmpty = note.content == "";
+      isNoticed = note.content != "";
+      _noticeController.text = note.content;
+    });
+
+  }
+
+  void initMark() async {
+    var newMark = await MarkDB().getUserMark(book.id, UserInfo.uid);
+    print("newMark");
+
+    setState(() {
+      mark = newMark;
+      print(mark);
+    });
+  }
+
   Future<void> initComments() async {
     List<Comment> coms = await CommentDB().getComments(book.id);
-    List<CommentModel> loadedComments = coms.map((c) => CommentModel(comment: c)).toList();
+    List<CommentModel> loadedComments = coms.map((c) => CommentModel(comment: c, onDelete: initComments,)).toList();
     setState(() {
       comments = loadedComments;
     });
@@ -78,31 +127,72 @@ class _BookPageState extends State<BookPage> {
             ),
             style: TextStyle(color: Colors.mycolor5), // Цвет вводимого текста
           ),
-          TextButton(
-            onPressed: () {
-              setState(() {
-                isNoticed = !isNoticed;
-              });
-            },
-            child: Text(
-              "Сохранить заметку",
-              style: TextStyle(
-                color: Colors.mycolor5,
-                decoration: TextDecoration.underline,
-                decorationColor: Colors.mycolor5,
-                fontFamily: font,
+          Row(
+            children: [
+              Spacer(),
+              ElevatedButton(
+                onPressed: () {
+                  print(isEmpty);
+                  if (isEmpty) NotesDB().addNote(book.id, UserInfo.uid, _noticeController.text);
+                  else NotesDB().updateNote(note.id, book.id, UserInfo.uid,_noticeController.text);
+                  setState(() {
+                    isEmpty = false;
+                    isNoticed = !isNoticed;
+                  });
+                },
+                style: ButtonStyle(
+                  backgroundColor: MaterialStateProperty.all<Color>(Colors.mycolor3),
+                  minimumSize: MaterialStateProperty.all<Size>(Size(10, 30)), // Установка размера кнопки (ширина x высота)
+                ),
+                child: Text(
+                  "Сохранить",
+                  style: TextStyle(
+                    color: Colors.mycolor5,
+                    decoration: TextDecoration.underline,
+                    decorationColor: Colors.mycolor5,
+                    fontFamily: font,
+                  ),
+                ),
               ),
-            ),
-          )
+              SizedBox(width: 10,),
+              ElevatedButton(
+                onPressed: () {
+                  setState(() {
+                    isNoticed = true;
+                    isAdding = false;
+                  });
+                },
+                style: ButtonStyle(
+                  backgroundColor: MaterialStateProperty.all<Color>(Colors.mycolor3),
+                  minimumSize: MaterialStateProperty.all<Size>(Size(10, 30)), // Установка размера кнопки (ширина x высота)
+                ),
+                child: Text(
+                  "Вернуться",
+                  style: TextStyle(
+                    color: Colors.mycolor5,
+                    decoration: TextDecoration.underline,
+                    decorationColor: Colors.mycolor5,
+                    fontFamily: font,
+                  ),
+                ),
+              ),
+              Spacer()
+            ],
+          ),
+
         ],
       ),
     )
-    : TextButton(
+    : ElevatedButton(
       onPressed: () {
         setState(() {
           isAdding = !isAdding;
         });
       },
+      style: ButtonStyle(
+        backgroundColor: MaterialStateProperty.all<Color>(Colors.mycolor3),
+        minimumSize: MaterialStateProperty.all<Size>(Size(10, 30)), // Установка размера кнопки (ширина x высота)
+      ),
       child: Text(
         "Добавить заметку",
         style: TextStyle(
@@ -119,6 +209,7 @@ class _BookPageState extends State<BookPage> {
     setState(() {
       isNoticed = false;
       isAdding = false;
+      isEmpty = true;
       _noticeController.text = "";
     });
   }
@@ -167,8 +258,9 @@ class _BookPageState extends State<BookPage> {
         child: Text(
           book.info,
           style: TextStyle(
-              color: Colors.mycolor4,
+              color: Colors.mycolor5,
             fontFamily: font,
+            fontSize: 15
           ),
         ),
       );
@@ -176,27 +268,45 @@ class _BookPageState extends State<BookPage> {
     else if (current_button == 1) {
       return  isNoticed ?
       Padding(
-        padding: const EdgeInsets.all(10.0),
+        padding: const EdgeInsets.all(0.0),
         child: Column(
           children: [
-            Text(
-              textAlign: TextAlign.left,
-              _noticeController.text,
-              style: TextStyle(
-                  color: Colors.mycolor5
+            Container(
+              width: 320,
+              decoration: BoxDecoration(
+                // color: Colors.mycolor3,
+                // borderRadius: BorderRadius.circular(15),
+              ),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 15.0),
+                child: Text(
+                  textAlign: TextAlign.left,
+                  '"' + _noticeController.text + '"',
+                  style: TextStyle(
+                      color: Colors.mycolor5,
+                    fontSize: 15,
+                    fontFamily: font,
+                    fontStyle: FontStyle.italic
+                  ),
+                ),
               ),
             ),
             Row(
               children: [
-                TextButton(
+                Spacer(),
+                ElevatedButton(
                   onPressed: () {
                     setState(() {
                       isAdding = true;
                       isNoticed = false;
                     });
                   },
+                  style: ButtonStyle(
+                    backgroundColor: MaterialStateProperty.all<Color>(Colors.mycolor3),
+                    minimumSize: MaterialStateProperty.all<Size>(Size(10, 30)), // Установка размера кнопки (ширина x высота)
+                  ),
                   child: Text(
-                    "Изменить заметку",
+                    "Изменить",
                     style: TextStyle(
                       color: Colors.mycolor5,
                       decoration: TextDecoration.underline,
@@ -205,12 +315,17 @@ class _BookPageState extends State<BookPage> {
                     ),
                   ),
                 ),
-                TextButton(
+                SizedBox(width: 10,),
+                ElevatedButton(
                   onPressed: () {
                     ConfirmDeleting(context);
                   },
+                  style: ButtonStyle(
+                    backgroundColor: MaterialStateProperty.all<Color>(Colors.mycolor3),
+                    minimumSize: MaterialStateProperty.all<Size>(Size(90, 30)), // Установка размера кнопки (ширина x высота)
+                  ),
                   child: Text(
-                    "Удалить заметку",
+                    "Удалить",
                     style: TextStyle(
                       color: Colors.mycolor5,
                       decoration: TextDecoration.underline,
@@ -219,6 +334,7 @@ class _BookPageState extends State<BookPage> {
                     ),
                   ),
                 ),
+                Spacer(),
               ],
             )
           ],
@@ -307,7 +423,7 @@ class _BookPageState extends State<BookPage> {
                 children: [
                   Container(
                     width: 130,
-                    child: Image.network("https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRxjLYTFNXwui-lMM7PeA9eS-ebbA9mxsk3xwTseXNxJoqVwEOZ4ViBKXr-iPwxzxhsVhw&usqp=CAU")
+                    child: Image.network("${book.imageUrl}")
                   ),
                   Column(
                     children: [
@@ -364,9 +480,8 @@ class _BookPageState extends State<BookPage> {
                         ),
                       ),
                       Container(
-                          padding: EdgeInsets.only(left: 10),
                           width: 200,
-                          child: Stars(stars_count: book.mark.round(), isDark: false,)
+                          child: StarsPanel(stars_count: mark, onUpdate: changeMark,)
                       ),
                     ],
                   )
@@ -377,7 +492,11 @@ class _BookPageState extends State<BookPage> {
               width: 350,
               child: ElevatedButton(
                 onPressed: () {
-                  Navigator.of(context).pushNamed('/reading_book');
+                  CollectionsDB().readBook(book.id);
+                  Navigator.of(context).pushNamed(
+                      '/reading_book',
+                    arguments: book,
+                  );
                 },
                 style: ElevatedButton.styleFrom(
                   primary: Colors.mycolor2, // Задайте желаемый цвет фона
@@ -396,6 +515,8 @@ class _BookPageState extends State<BookPage> {
             Container(
               width: 350,
               // height: 400,
+              // padding: EdgeInsets.only(bottom: 10),
+              margin: EdgeInsets.only(bottom: 40),
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.all(Radius.circular(20)),
                 color: Colors.mycolor2
@@ -469,3 +590,4 @@ class _BookPageState extends State<BookPage> {
     );
   }
 }
+

@@ -13,6 +13,9 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
   List<Book> books = [];
   bool isDark = false;
+  String currentInput = '';
+  List<String> suggestions = [];
+  final SearchController controller = SearchController();
 
   void initBooks() async {
     books = await BookDB().getBook();
@@ -24,6 +27,15 @@ class _HomePageState extends State<HomePage> {
     initBooks();
     super.initState();
   }
+
+  void updateSuggestions(String input) {
+    // Ваш код для обновления списка подсказок на основе ввода
+    // Например, можно фильтровать данные или делать запросы
+    setState(() {
+      suggestions = ["8"];
+    });
+  }
+
 
   @override
   Widget build(BuildContext context) {
@@ -64,50 +76,38 @@ class _HomePageState extends State<HomePage> {
           //       ),
           //     )
           // ),
+
           Padding(
             padding: const EdgeInsets.all(8.0),
             child: SearchAnchor(
+
+                searchController: controller,
                 builder: (BuildContext context, SearchController controller) {
                   return SearchBar(
+                    backgroundColor: MaterialStateProperty.resolveWith<Color?>(
+                          (states) => Colors.mycolor5,
+                    ),
+                    hintText: "Найти книгу",
                     controller: controller,
                     padding: const MaterialStatePropertyAll<EdgeInsets>(
                         EdgeInsets.symmetric(horizontal: 16.0)),
                     onTap: () {
-                      controller.openView();
-                    },
-                    onChanged: (_) {
-                      controller.openView();
+                      Navigator.of(context).pushNamed(
+                        '/search',
+                      );
                     },
                     leading: const Icon(Icons.search),
-                    trailing: <Widget>[
-                      Tooltip(
-                        message: 'Change brightness mode',
-                        child: IconButton(
-                          isSelected: isDark,
-                          onPressed: () {
-                            setState(() {
-                              isDark = !isDark;
-                            });
-                          },
-                          icon: const Icon(Icons.wb_sunny_outlined),
-                          selectedIcon: const Icon(Icons.brightness_2_outlined),
-                        ),
-                      )
-                    ],
                   );
-                }, suggestionsBuilder:
+                },
+
+                suggestionsBuilder:
                 (BuildContext context, SearchController controller) {
-              return List<ListTile>.generate(5, (int index) {
-                final String item = 'item $index';
-                return ListTile(
-                  title: Text(item),
-                  onTap: () {
-                    setState(() {
-                      controller.closeView(item);
-                    });
-                  },
-                );
-              });
+                return List<ListTile>.generate(5, (int index) {
+                  final String item = 'item $index';
+                  return ListTile(
+                    title: Text(item),
+                  );
+                });
             }),
           ),
           Container(
@@ -117,7 +117,7 @@ class _HomePageState extends State<HomePage> {
                 SliverGrid(
                   gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                     crossAxisCount: 2,
-                    childAspectRatio: 0.75,
+                    childAspectRatio: 0.55,
                   ),
                   delegate: SliverChildBuilderDelegate(
                         (context, index) => Post(book: books[index]),
